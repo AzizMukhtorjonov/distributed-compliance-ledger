@@ -63,6 +63,20 @@ an Account or sign the request.
   - The user does a `POST` of the signed request to `http://<node-ip>:1317/cosmos/tx/v1beta1/txs` endpoint.
   - Example
 
+### Possible list of transactional errors
+If the request is transactional it will error with DCL's error codes.
+
+DCL error codes are separated by modules:
+
+1. [Auth](../x/dclauth/types/errors.go)
+2. [Compliance](../x/compliance/types/errors.go)
+3. [PKI](../types/pki/errors.go)
+4. [Model](../x/model/types/errors.go)
+5. [Validator](../x/validator/types/errors.go)
+6. [VendorInfo](../x/vendorinfo/types/errors.go)
+7. [DCL Upgrade](../x/dclupgrade/types/errors.go)
+
+
 ```bash
 dcld tx ... --generate-only
 dcld query auth account --address <address>
@@ -101,6 +115,11 @@ Please make sure that TLS is enabled in gRPC, REST or Light Client Proxy for sec
   - Refer to [this doc](./cometbft-rpc.md) to see how to [subscribe](./cometbft-rpc.md#subscribe) to a Tendermint WebSocket based events and/or [query](./cometbft-rpc.md#querying-application-components) an application components. 
 
 `NotFound` (404 code) is returned if an entry is not found on the ledger.
+
+### Possible list of query errors 
+
+If the request is plain query (GET request) it will return error with GRPC error code.
+GRPC error codes are defined in grpc [doc](https://pkg.go.dev/google.golang.org/grpc/codes).
 
 ### Query types
 
