@@ -1540,3 +1540,34 @@ func DemoWithHexVidAndPid(suite *utils.TestSuite) {
 	require.Equal(suite.T, 1, len(vendorModels.Products))
 	require.Equal(suite.T, createFirstModelMsg.Pid, vendorModels.Products[0].Pid)
 }
+func GetModelVersions(
+	suite *utils.TestSuite,
+	vid int32,
+	pid int32,
+) (*modeltypes.ModelVersions, error) {
+	var res modeltypes.ModelVersions
+
+	if suite.Rest {
+		var resp modeltypes.QueryGetModelVersionsResponse
+		err := suite.QueryREST(fmt.Sprintf("/dcl/model/versions/%v/%v", vid, pid), &resp)
+		if err != nil {
+			return nil, err
+		}
+		res = resp.GetModelVersions()
+	} else {
+		grpcConn := suite.GetGRPCConn()
+		defer grpcConn.Close()
+
+		modelClient := modeltypes.NewQueryClient(grpcConn)
+		resp, err := modelClient.ModelVersions(
+			context.Background(),
+			&modeltypes.QueryGetModelVersionsRequest{Vid: vid, Pid: pid},
+		)
+		if err != nil {
+			return nil, err
+		}
+		res = resp.GetModelVersions()
+	}
+
+	return &res, nil
+}

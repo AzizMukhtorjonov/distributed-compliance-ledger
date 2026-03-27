@@ -25,10 +25,14 @@ ENV GO_VERSION=1.20
 RUN apt-get update
 RUN apt-get install -y wget git gcc make
 
-RUN wget -P /tmp "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
-
-RUN tar -C /usr/local -xzf "/tmp/go${GO_VERSION}.linux-amd64.tar.gz"
-RUN rm "/tmp/go${GO_VERSION}.linux-amd64.tar.gz"
+RUN ARCH=$(dpkg --print-architecture); \
+    if [ "$ARCH" = "amd64" ]; then GO_ARCH="linux-amd64"; \
+    elif [ "$ARCH" = "arm64" ]; then GO_ARCH="linux-arm64"; \
+    else echo "Unsupported architecture: $ARCH"; exit 1; fi; \
+    wget -P /tmp "https://dl.google.com/go/go${GO_VERSION}.${GO_ARCH}.tar.gz"; \
+    tar -C /usr/local -xzf "/tmp/go${GO_VERSION}.${GO_ARCH}.tar.gz"; \
+    rm "/tmp/go${GO_VERSION}.${GO_ARCH}.tar.gz"; \
+    echo "export GOARCH=${ARCH}" >> /etc/profile
 
 ENV GOPATH=/go
 ENV PATH=$GOPATH/bin:/usr/local/go/bin:$PATH

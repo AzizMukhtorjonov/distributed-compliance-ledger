@@ -24,7 +24,7 @@ root_cert_vid=65521
 trustee_account="jack"
 second_trustee_account="alice"
 
-echo "Create a VendorAdmin Account"
+# ACTION: Create a VendorAdmin account to be used for authorized transactions
 create_new_account vendor_admin_account "VendorAdmin"
 
 test_divider
@@ -33,14 +33,17 @@ test_divider
 echo "ASSIGN VID TO ROOT CERTIFICATE THAT ALREADY HAS VID"
 
 echo "Propose and approve root certificate"
+# ACTION: Propose a new X.509 root certificate to the ledger
 result=$(echo "$passphrase" | dcld tx pki propose-add-x509-root-cert --certificate="$root_cert_subject_path"  --vid "$root_cert_vid" --from $trustee_account --yes)
 result=$(get_txn_result "$result")
 check_response "$result" "\"code\": 0"
+# ACTION: Approve the proposed X.509 root certificate by a second trustee
 result=$(echo "$passphrase" | dcld tx pki approve-add-x509-root-cert --subject="$root_cert_subject" --subject-key-id="$root_cert_subject_key_id" --from $second_trustee_account --yes)
 result=$(get_txn_result "$result")
 check_response "$result" "\"code\": 0"
 
 echo "Assing VID"
+# ACTION: Assign a Vendor ID (VID) to the approved root certificate
 result=$(dcld tx pki assign-vid --subject="$root_cert_subject" --subject-key-id="$root_cert_subject_key_id" --vid="$root_cert_vid" --from $vendor_admin_account --yes)
 result=$(get_txn_result "$result")
 check_response "$result" "vid is not empty"

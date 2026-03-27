@@ -22,6 +22,7 @@ vid=$RANDOM
 pid=$RANDOM
 vendor_account=vendor_account_$vid
 echo "Create Vendor account - $vendor_account"
+# ACTION: Create a vendor account for the specific VID
 create_new_vendor_account $vendor_account $vid
 
 test_divider
@@ -30,6 +31,7 @@ test_divider
 pid_ranges="$pid-$pid"
 vendor_account_with_pids=vendor_account_$vid_with_pids
 echo "Create Vendor account - $vid_with_pids with ProductIDs - $pid_ranges"
+# ACTION: Create another vendor account with assigned Product ID ranges
 create_new_vendor_account $vendor_account_with_pids $vid_with_pids $pid_ranges
 
 test_divider
@@ -37,6 +39,7 @@ test_divider
 # Body
 
 echo "Query non existent model"
+# ACTION: Query a model that does not exist and expect "Not Found"
 result=$(dcld query model get-model --vid=$vid --pid=$pid)
 check_response "$result" "Not Found"
 echo "$result"
@@ -44,6 +47,7 @@ echo "$result"
 test_divider
 
 echo "Query non existent Vendor Models"
+# ACTION: Query models for a vendor that has none and expect "Not Found"
 result=$(dcld query model vendor-models --vid=$vid)
 check_response "$result" "Not Found"
 echo "$result"
@@ -51,6 +55,7 @@ echo "$result"
 test_divider
 
 echo "Request all models must be empty"
+# ACTION: Query all models and expect an empty list
 result=$(dcld query model all-models)
 check_response "$result" "\[\]"
 echo "$result"
@@ -62,6 +67,7 @@ enhancedSetupFlowOptions_0=0
 schema_version_0=0
 
 echo "Add Model with VID: $vid PID: $pid"
+# ACTION: Add a new Model record
 result=$(echo "test1234" | dcld tx model add-model --vid=$vid --pid=$pid --deviceTypeID=1 --productName=TestProduct --productLabel="$productLabel" --partNumber=1 --commissioningCustomFlow=0 --enhancedSetupFlowOptions=$enhancedSetupFlowOptions_0 --schemaVersion=$schema_version_0 --from=$vendor_account --yes)
 result=$(get_txn_result "$result")
 check_response "$result" "\"code\": 0"
@@ -71,6 +77,7 @@ test_divider
 
 # check default values for commissioningModeInitialStepsHint and commissioningModeSecondaryStepsHint, factoryResetStepsHint and icdUserActiveModeTriggerHint
 echo "Get Model with VID: $vid PID: $pid"
+# ACTION: Query the newly created Model and verify default hint values
 result=$(dcld query model get-model --vid=$vid --pid=$pid)
 check_response "$result" "\"vid\": $vid"
 check_response "$result" "\"pid\": $pid"
@@ -84,6 +91,7 @@ check_response "$result" "\"enhancedSetupFlowOptions\": $enhancedSetupFlowOption
 echo "$result"
 
 echo "Get all models"
+# ACTION: Query all models and verify the created model is listed
 result=$(dcld query model all-models)
 check_response "$result" "\"vid\": $vid"
 check_response "$result" "\"pid\": $pid"
@@ -92,6 +100,7 @@ echo "$result"
 test_divider
 
 echo "Get Vendor Models with VID: ${vid}"
+# ACTION: Query models for the specific vendor
 result=$(dcld query model vendor-models --vid=$vid)
 check_response "$result" "\"pid\": $pid"
 echo "$result"
@@ -105,6 +114,7 @@ commissioningModeSecondaryStepsHint=7
 factoryResetStepsHint=5
 icdUserActiveModeTriggerHint=6
 enhancedSetupFlowOptions_2=2
+# ACTION: Update the model with custom hint values
 result=$(echo "test1234" | dcld tx model update-model --vid=$vid --pid=$pid --from $vendor_account --yes --productLabel "$description" --schemaVersion=$schema_version_0 \
   --commissioningModeInitialStepsHint="$commissioningModeInitialStepsHint" --commissioningModeSecondaryStepsHint="$commissioningModeSecondaryStepsHint" \
   --icdUserActiveModeTriggerHint="$icdUserActiveModeTriggerHint" \
@@ -117,6 +127,7 @@ test_divider
 
 # check updated values for commissioningModeInitialStepsHint == 3 and commissioningModeSecondaryStepsHint == 7
 echo "Get Model with VID: ${vid} PID: ${pid}"
+# ACTION: Verify fields reflect the updated hint values
 result=$(dcld query model get-model --vid=$vid --pid=$pid)
 check_response "$result" "\"vid\": $vid"
 check_response "$result" "\"pid\": $pid"
@@ -133,6 +144,7 @@ test_divider
 
 echo "Update Model with VID: ${vid} PID: ${pid} with new description only"
 description="New Device Description 2"
+# ACTION: Update only the description of the model
 result=$(echo "test1234" | dcld tx model update-model --vid=$vid --pid=$pid --from $vendor_account --yes --productLabel "$description" --schemaVersion=$schema_version_0 --enhancedSetupFlowOptions=$enhancedSetupFlowOptions_2)
 result=$(get_txn_result "$result")
 check_response "$result" "\"code\": 0"
@@ -143,6 +155,7 @@ test_divider
 # check non-updated values for commissioningModeInitialStepsHint and commissioningModeSecondaryStepsHint, factoryResetStepsHint and icdUserActiveModeTriggerHint
 # (because the values have not been set)
 echo "Get Model with VID: ${vid} PID: ${pid}"
+# ACTION: Verify hints remained unchanged after description-only update
 result=$(dcld query model get-model --vid=$vid --pid=$pid)
 check_response "$result" "\"vid\": $vid"
 check_response "$result" "\"pid\": $pid"
@@ -159,6 +172,7 @@ test_divider
 
 echo "Update Model with VID: ${vid} PID: ${pid} with new description, commissioningModeInitialStepsHint, commissioningModeSecondaryStepsHint, factoryResetStepsHint, and icdUserActiveModeTriggerHint"
 description="New Device Description 3"
+# ACTION: Attempt to update hints with 0 (expecting them to remain unchanged or use previous values)
 result=$(echo "test1234" | dcld tx model update-model --vid=$vid --pid=$pid --from $vendor_account --yes --productLabel "$description" --schemaVersion=$schema_version_0 \
   --commissioningModeInitialStepsHint=0 --commissioningModeSecondaryStepsHint=0 --factoryResetStepsHint=0 --icdUserActiveModeTriggerHint=0 --enhancedSetupFlowOptions=$enhancedSetupFlowOptions_2)
 result=$(get_txn_result "$result")
@@ -170,6 +184,7 @@ test_divider
 # check non-updated values for commissioningModeInitialStepsHint, commissioningModeSecondaryStepsHint, factoryResetStepsHint, and icdUserActiveModeTriggerHint
 # (because the values were set to 0)
 echo "Get Model with VID: ${vid} PID: ${pid}"
+# ACTION: Verify hints remained unchanged after setting to 0 in update
 result=$(dcld query model get-model --vid=$vid --pid=$pid)
 check_response "$result" "\"vid\": $vid"
 check_response "$result" "\"pid\": $pid"

@@ -62,7 +62,7 @@ comma := ,
 build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 
-ldflags += $(LDFLAGS)
+# ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
 build_tags += $(BUILD_TAGS)
