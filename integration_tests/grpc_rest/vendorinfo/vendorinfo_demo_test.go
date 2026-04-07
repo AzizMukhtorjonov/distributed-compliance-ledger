@@ -1,3 +1,4 @@
+// Bash Source: integration_tests/cli/vendorinfo-demo.sh
 package vendorinfo_test
 
 import (

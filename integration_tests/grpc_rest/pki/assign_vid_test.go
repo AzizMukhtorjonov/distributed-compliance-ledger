@@ -1,3 +1,4 @@
+// Bash Source: integration_tests/cli/pki-assign-vid.sh
 package pki_test
 
 import (

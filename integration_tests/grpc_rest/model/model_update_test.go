@@ -1,3 +1,4 @@
+// Bash Source: integration_tests/cli/model-update.sh
 package model_test
 
 import (

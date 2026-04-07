@@ -1,8 +1,9 @@
+// Bash Source: integration_tests/cli/modelversion-demo.sh (pre-existing gRPC test, extended by commit e99b522f)
+// This file predates the bash-to-Go migration and tests model version lifecycle via gRPC.
+// The model_version_rewrite_test.go is the canonical bash migration.
 package model_test
 
 import (
-	"context"
-	"fmt"
 	"testing"
 
 	tmrand "github.com/cometbft/cometbft/libs/rand"
@@ -14,7 +15,6 @@ import (
 	"github.com/zigbee-alliance/distributed-compliance-ledger/integration_tests/utils"
 	commontypes "github.com/zigbee-alliance/distributed-compliance-ledger/x/common/types"
 	dclauthtypes "github.com/zigbee-alliance/distributed-compliance-ledger/x/dclauth/types"
-	modeltypes "github.com/zigbee-alliance/distributed-compliance-ledger/x/model/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -79,8 +79,8 @@ func TestModelVersionDemo(t *testing.T) {
 	require.Equal(t, uint32(testconstants.MinApplicableSoftwareVersion), receivedModelVersion.MinApplicableSoftwareVersion)
 	require.Equal(t, uint32(testconstants.MaxApplicableSoftwareVersion), receivedModelVersion.MaxApplicableSoftwareVersion)
 
-	// Query all model versions
-	modelVersions, err := GetModelVersions(&suite, vid, pid)
+	// Query all model versions — uses model.GetModelVersions from helpers.go
+	modelVersions, err := model.GetModelVersions(&suite, vid, pid)
 	require.NoError(t, err)
 	require.Len(t, modelVersions.SoftwareVersions, 1)
 	require.Equal(t, sv, modelVersions.SoftwareVersions[0])
@@ -93,7 +93,7 @@ func TestModelVersionDemo(t *testing.T) {
 	require.Equal(t, codes.NotFound, stat.Code())
 
 	// Query non existent model versions
-	_, err = GetModelVersions(&suite, int32(tmrand.Uint16()), int32(tmrand.Uint16()))
+	_, err = model.GetModelVersions(&suite, int32(tmrand.Uint16()), int32(tmrand.Uint16()))
 	require.Error(t, err)
 	stat, ok = status.FromError(err)
 	require.True(t, ok)
@@ -127,7 +127,7 @@ func TestModelVersionDemo(t *testing.T) {
 	require.NoError(t, err)
 
 	// Query all model versions
-	modelVersions, err = GetModelVersions(&suite, vid, pid)
+	modelVersions, err = model.GetModelVersions(&suite, vid, pid)
 	require.NoError(t, err)
 	require.Len(t, modelVersions.SoftwareVersions, 2)
 	require.Contains(t, modelVersions.SoftwareVersions, sv)
@@ -171,37 +171,4 @@ func TestModelVersionDemo(t *testing.T) {
 	stat, ok = status.FromError(err)
 	require.True(t, ok)
 	require.Equal(t, codes.NotFound, stat.Code())
-}
-
-func GetModelVersions(
-	suite *utils.TestSuite,
-	vid int32,
-	pid int32,
-) (*modeltypes.ModelVersions, error) {
-	var res modeltypes.ModelVersions
-
-	if suite.Rest {
-		var resp modeltypes.QueryGetModelVersionsResponse
-		err := suite.QueryREST(fmt.Sprintf("/dcl/model/versions/%v/%v", vid, pid), &resp)
-		if err != nil {
-			return nil, err
-		}
-		res = resp.GetModelVersions()
-	} else {
-		grpcConn := suite.GetGRPCConn()
-		defer grpcConn.Close()
-
-		// This creates a gRPC client to query the x/dclauth service.
-		modelClient := modeltypes.NewQueryClient(grpcConn)
-		resp, err := modelClient.ModelVersions(
-			context.Background(),
-			&modeltypes.QueryGetModelVersionsRequest{Vid: vid, Pid: pid},
-		)
-		if err != nil {
-			return nil, err
-		}
-		res = resp.GetModelVersions()
-	}
-
-	return &res, nil
 }
