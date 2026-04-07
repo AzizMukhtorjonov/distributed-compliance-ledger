@@ -23,13 +23,11 @@ pid=$RANDOM
 
 vendor_account=vendor_account_$vid
 echo "Create Vendor account - $vendor_account"
-# ACTION: Create a vendor account for the specific VID
 create_new_vendor_account $vendor_account $vid
 
 
 # Create a new model version
 echo "Add Model with VID: $vid PID: $pid"
-# ACTION: Add a base Model record as a prerequisite for versioning
 result=$(echo "test1234" | dcld tx model add-model --vid=$vid --pid=$pid --deviceTypeID=1 --productName=TestProduct --productLabel="Test Product" --partNumber=1 --commissioningCustomFlow=0 --enhancedSetupFlowOptions=0 --from=$vendor_account --yes)
 result=$(get_txn_result "$result")
 check_response "$result" "\"code\": 0"
@@ -39,7 +37,6 @@ test_divider
 sv=$RANDOM
 schema_version_0=0
 echo "Create a Device Model Version with VID: $vid PID: $pid SV: $sv"
-# ACTION: Create a first Model Version record
 result=$(echo 'test1234' | dcld tx model add-model-version --cdVersionNumber=1 --maxApplicableSoftwareVersion=10 --minApplicableSoftwareVersion=1 --vid=$vid --pid=$pid --softwareVersion=$sv --softwareVersionString=1   --schemaVersion=$schema_version_0 --from=$vendor_account --yes)
 result=$(get_txn_result "$result")
 echo "$result"
@@ -49,7 +46,6 @@ test_divider
 
 # Query the model version 
 echo "Query Device Model Version with VID: $vid PID: $pid SV: $sv"
-# ACTION: Query the newly created Model Version and verify its fields
 result=$(dcld query model model-version --vid=$vid --pid=$pid --softwareVersion=$sv)
 echo "$result"
 check_response "$result" "\"vid\": $vid"
@@ -66,7 +62,6 @@ test_divider
 
 # Query all model versions
 echo "Query all model versions with VID: $vid PID: $pid "
-# ACTION: Query all versions for this Model and verify the version is present
 result=$(dcld query model all-model-versions --vid=$vid --pid=$pid)
 echo "$result"
 check_response "$result" "\"vid\": $vid"
@@ -80,7 +75,6 @@ test_divider
 
 # Query non existent model version
 echo "Query Device Model Version with VID: $vid PID: $pid SV: 123456"
-# ACTION: Query a non-existent version and expect "Not Found"
 result=$(dcld query model model-version --vid=$vid --pid=$pid --softwareVersion=123456)
 check_response "$result" "Not Found"
 
@@ -90,7 +84,6 @@ test_divider
 vid1=$RANDOM
 pid1=$RANDOM
 echo "Query all Device Model Versions with VID: $vid1 PID: $pid1"
-# ACTION: Query versions for a non-existent model and expect "Not Found"
 result=$(dcld query model all-model-versions --vid=$vid1 --pid=$pid1)
 check_response "$result" "Not Found"
 
@@ -98,7 +91,6 @@ test_divider
 
 # Update the existing model version
 echo "Update Device Model Version with VID: $vid PID: $pid SV: $sv"
-# ACTION: Update the existing Model Version record
 result=$(echo 'test1234' | dcld tx model update-model-version --vid=$vid --pid=$pid --minApplicableSoftwareVersion=2 --maxApplicableSoftwareVersion=10 --softwareVersion=$sv --softwareVersionValid=false  --schemaVersion=$schema_version_0 --from=$vendor_account --yes)
 result=$(get_txn_result "$result")
 check_response "$result" "\"code\": 0"
@@ -107,7 +99,6 @@ test_divider
 
 # Query Updated model version
 echo "Query updated Device Model Version with VID: $vid PID: $pid SV: $sv"
-# ACTION: Verify the Model Version fields after update
 result=$(dcld query model model-version --vid=$vid --pid=$pid --softwareVersion=$sv)
 echo "$result"
 check_response "$result" "\"vid\": $vid"
@@ -125,7 +116,6 @@ test_divider
 # Add second model version
 sv2=$RANDOM
 echo "Create a Second Device Model Version with VID: $vid PID: $pid SV: $sv2"
-# ACTION: Create a second Model Version for the same Model
 result=$(echo 'test1234' | dcld tx model add-model-version --cdVersionNumber=1 --maxApplicableSoftwareVersion=10 --minApplicableSoftwareVersion=1 --vid=$vid --pid=$pid --softwareVersion=$sv2 --softwareVersionString=1 --from=$vendor_account --yes)
 result=$(get_txn_result "$result")
 echo "$result"
@@ -135,7 +125,6 @@ test_divider
 
 # Query all model versions
 echo "Query all model versions with VID: $vid PID: $pid "
-# ACTION: Query all versions and verify both are listed
 result=$(dcld query model all-model-versions --vid=$vid --pid=$pid)
 echo "$result"
 check_response "$result" "\"vid\": $vid"
@@ -151,9 +140,7 @@ test_divider
 echo "Create a Device Model Version with VID: $vid PID: $pid SV: $sv from a different vendor account"
 newvid=$RANDOM
 different_vendor_account=vendor_account_$newvid
-# ACTION: Create another vendor account (not authorized for original VID)
 create_new_vendor_account $different_vendor_account $newvid
-# ACTION: Attempt to create a version for original VID using unauthorized account
 result=$(echo 'test1234' | dcld tx model add-model-version --cdVersionNumber=1 --maxApplicableSoftwareVersion=10 --minApplicableSoftwareVersion=1 --vid=$vid --pid=$pid --softwareVersion=$sv --softwareVersionString=1 --from=$different_vendor_account --yes)
 result=$(get_txn_result "$result")
 check_response_and_report "$result" "transaction should be signed by a vendor account containing the vendorID $vid"
@@ -162,14 +149,12 @@ test_divider
 
 # Update model version with vid belonging to another vendor
 echo "Update a Device Model Version with VID: $vid PID: $pid SV: $sv from a different vendor account"
-# ACTION: Attempt to update version for original VID using unauthorized account
 result=$(echo 'test1234' | dcld tx model update-model-version --vid=$vid --pid=$pid --softwareVersion=$sv --softwareVersionValid=false --from=$different_vendor_account --yes)
 result=$(get_txn_result "$result")
 check_response_and_report "$result" "transaction should be signed by a vendor account containing the vendorID $vid"
 
 # Delete existing model version
 echo "Delete a Device Model Version with VID: $vid PID: $pid SV: $sv"
-# ACTION: Delete the first Model Version
 result=$(echo 'test1234' | dcld tx model delete-model-version --vid=$vid --pid=$pid --softwareVersion=$sv --from=$vendor_account --yes)
 result=$(get_txn_result "$result")
 echo "$result"
@@ -177,7 +162,6 @@ check_response "$result" "\"code\": 0"
 
 # Query deleted model version
 echo "Query deleted Device Model Version with VID: $vid PID: $pid SV: $sv"
-# ACTION: Verify the Model Version is no longer found after deletion
 result=$(dcld query model model-version --vid=$vid --pid=$pid --softwareVersion=$sv)
 echo "$result"
 check_response "$result" "Not Found"

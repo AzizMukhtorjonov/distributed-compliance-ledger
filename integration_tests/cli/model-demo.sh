@@ -22,7 +22,6 @@ vid=$RANDOM
 pid=$RANDOM
 vendor_account=vendor_account_$vid
 echo "Create Vendor account - $vendor_account"
-# ACTION: Create a vendor account for the specific VID
 create_new_vendor_account $vendor_account $vid
 
 test_divider
@@ -31,7 +30,6 @@ test_divider
 pid_ranges="$pid-$pid"
 vendor_account_with_pids=vendor_account_$vid_with_pids
 echo "Create Vendor account - $vid_with_pids with ProductIDs - $pid_ranges"
-# ACTION: Create another vendor account with assigned Product ID ranges
 create_new_vendor_account $vendor_account_with_pids $vid_with_pids $pid_ranges
 
 test_divider
@@ -39,7 +37,6 @@ test_divider
 # Body
 
 echo "Query non existent model"
-# ACTION: Query a model that does not exist and expect "Not Found"
 result=$(dcld query model get-model --vid=$vid --pid=$pid)
 check_response "$result" "Not Found"
 echo "$result"
@@ -47,7 +44,6 @@ echo "$result"
 test_divider
 
 echo "Query non existent Vendor Models"
-# ACTION: Query models for a vendor that has none and expect "Not Found"
 result=$(dcld query model vendor-models --vid=$vid)
 check_response "$result" "Not Found"
 echo "$result"
@@ -55,7 +51,6 @@ echo "$result"
 test_divider
 
 echo "Request all models must be empty"
-# ACTION: Query all models and expect an empty list
 result=$(dcld query model all-models)
 check_response "$result" "\[\]"
 echo "$result"
@@ -66,7 +61,6 @@ productLabel="Device #1"
 enhancedSetupFlowOptions_0=0
 schema_version_0=0
 echo "Add Model with VID: $vid PID: $pid"
-# ACTION: Add a new Model record with basic information
 result=$(echo "test1234" | dcld tx model add-model --vid=$vid --pid=$pid --deviceTypeID=1 --productName=TestProduct --productLabel="$productLabel" --partNumber=1 --commissioningCustomFlow=0 --enhancedSetupFlowOptions=$enhancedSetupFlowOptions_0 --schemaVersion=$schema_version_0 --from=$vendor_account --yes)
 result=$(get_txn_result "$result")
 check_response "$result" "\"code\": 0"
@@ -84,7 +78,6 @@ maintenanceUrl="https://example.org"
 commissioningFallbackUrl="https://url.commissioningfallbackurl.dclmodel"
 discoveryCapabilitiesBitmask=1
 echo "Add Model with VID: $vid_with_pids PID: $pid"
-# ACTION: Add another Model record with enhanced setup flow options
 result=$(echo "test1234" | dcld tx model add-model --vid=$vid_with_pids --pid=$pid --deviceTypeID=1 --productName=TestProduct --productLabel="$productLabel" --partNumber=1 --commissioningCustomFlow=0 --enhancedSetupFlowOptions=$enhancedSetupFlowOptions_1 \
   --enhancedSetupFlowTCUrl=$enhancedSetupFlowTCUrl --enhancedSetupFlowTCRevision=$enhancedSetupFlowTCRevision --enhancedSetupFlowTCDigest=$enhancedSetupFlowTCDigest --enhancedSetupFlowTCFileSize=$enhancedSetupFlowTCFileSize --maintenanceUrl=$maintenanceUrl \
   --commissioningFallbackUrl=$commissioningFallbackUrl --discoveryCapabilitiesBitmask=$discoveryCapabilitiesBitmask --from=$vendor_account_with_pids --yes)
@@ -95,7 +88,6 @@ echo "$result"
 test_divider
 
 echo "Get Model with VID: $vid PID: $pid"
-# ACTION: Query the first Model and verify its fields
 result=$(dcld query model get-model --vid=$vid --pid=$pid)
 check_response "$result" "\"vid\": $vid"
 check_response "$result" "\"pid\": $pid"
@@ -105,7 +97,6 @@ check_response "$result" "\"enhancedSetupFlowOptions\": $enhancedSetupFlowOption
 echo "$result"
 
 echo "Get Model with VID: $vid_with_pids PID: $pid"
-# ACTION: Query the second Model and verify its detailed fields
 result=$(dcld query model get-model --vid=$vid_with_pids --pid=$pid)
 check_response "$result" "\"vid\": $vid_with_pids"
 check_response "$result" "\"pid\": $pid"
@@ -126,7 +117,6 @@ test_divider
 sv=1
 cd_version_num=10
 echo "Create Model Versions with VID: $vid PID: $pid SoftwareVersion: $sv"
-# ACTION: Create a Model Version for the first model
 result=$(echo "test1234" | dcld tx model add-model-version --vid=$vid --pid=$pid --softwareVersion=$sv --minApplicableSoftwareVersion=1 --maxApplicableSoftwareVersion=15 --softwareVersionString=$sv --cdVersionNumber=$cd_version_num --from=$vendor_account --yes)
 result=$(get_txn_result "$result")
 check_response "$result" "\"code\": 0"
@@ -135,7 +125,6 @@ echo "$result"
 test_divider
 
 echo "Create Model Versions with VID: $vid_with_pids PID: $pid SoftwareVersion: $sv"
-# ACTION: Create a Model Version for the second model
 result=$(echo "test1234" | dcld tx model add-model-version --vid=$vid_with_pids --pid=$pid --softwareVersion=$sv --minApplicableSoftwareVersion=1 --maxApplicableSoftwareVersion=15 --softwareVersionString=$sv --cdVersionNumber=$cd_version_num --from=$vendor_account_with_pids --yes)
 result=$(get_txn_result "$result")
 check_response "$result" "\"code\": 0"
@@ -144,7 +133,6 @@ echo "$result"
 test_divider
 
 echo "Get all models"
-# ACTION: Query all models and verify both are listed
 result=$(dcld query model all-models)
 check_response "$result" "\"vid\": $vid"
 check_response "$result" "\"pid\": $pid"
@@ -153,7 +141,6 @@ echo "$result"
 test_divider
 
 echo "Get Vendor Models with VID: ${vid}"
-# ACTION: Query models specifically for the first vendor
 result=$(dcld query model vendor-models --vid=$vid)
 check_response "$result" "\"pid\": $pid"
 echo "$result"
@@ -167,7 +154,6 @@ newCommissioningModeSecondaryStepsHint=9
 newIcdUserActiveModeTriggerHint=7
 newFactoryResetStepsHint=6
 enhancedSetupFlowOptions_2=2
-# ACTION: Update several fields of the first model
 result=$(echo "test1234" | dcld tx model update-model --vid=$vid --pid=$pid --from $vendor_account --yes --productLabel "$description" --schemaVersion=$schema_version_0 \
   --commissioningModeInitialStepsHint="$newCommissioningModeInitialStepsHint" --commissioningModeSecondaryStepsHint="$newCommissioningModeSecondaryStepsHint" \
   --icdUserActiveModeTriggerHint="$newIcdUserActiveModeTriggerHint" --enhancedSetupFlowOptions=$enhancedSetupFlowOptions_2\
@@ -185,7 +171,6 @@ newEnhancedSetupFlowTCFileSize=2048
 newMaintenanceUrl="https://example2.org"
 newCommissioningFallbackUrl="https://url.commissioningfallbackurl2.dclmodel"
 echo "Update Model with VID: ${vid_with_pids} PID: ${pid} with new description, enhancedSetupFlowTCUrl, enhancedSetupFlowTCRevision, enhancedSetupFlowTCDigest, enhancedSetupFlowTCFileSize and maintenanceUrl"
-# ACTION: Update advanced fields of the second model
 result=$(echo "test1234" | dcld tx model update-model --vid=$vid_with_pids --pid=$pid --from $vendor_account_with_pids --yes --productLabel "$description" --enhancedSetupFlowOptions=$enhancedSetupFlowOptions_1 \
     --enhancedSetupFlowTCUrl=$newEnhancedSetupFlowTCUrl --enhancedSetupFlowTCRevision=$newEnhancedSetupFlowTCRevision --enhancedSetupFlowTCDigest=$newEnhancedSetupFlowTCDigest --enhancedSetupFlowTCFileSize=$newEnhancedSetupFlowTCFileSize --maintenanceUrl=$newMaintenanceUrl --commissioningFallbackUrl=$newCommissioningFallbackUrl --from=$vendor_account_with_pids --yes)
 result=$(get_txn_result "$result")
@@ -195,7 +180,6 @@ echo "$result"
 test_divider
 
 echo "Get Model with VID: ${vid} PID: ${pid}"
-# ACTION: Verify fields of the first model after update
 result=$(dcld query model get-model --vid=$vid --pid=$pid)
 check_response "$result" "\"vid\": $vid"
 check_response "$result" "\"pid\": $pid"
@@ -209,7 +193,6 @@ check_response "$result" "\"enhancedSetupFlowOptions\": $enhancedSetupFlowOption
 echo "$result"
 
 echo "Get Model with VID: $vid_with_pids PID: $pid"
-# ACTION: Verify fields of the second model after update
 result=$(dcld query model get-model --vid=$vid_with_pids --pid=$pid)
 check_response "$result" "\"vid\": $vid_with_pids"
 check_response "$result" "\"pid\": $pid"
@@ -227,7 +210,6 @@ test_divider
 
 echo "Update Model with VID: ${vid} PID: ${pid} modifying supportURL"
 supportURL="https://newsupporturl.test"
-# ACTION: Update the support URL of the first model
 result=$(echo "test1234" | dcld tx model update-model --vid=$vid --pid=$pid --from $vendor_account --yes --supportURL "$supportURL" --enhancedSetupFlowOptions=$enhancedSetupFlowOptions_0)
 result=$(get_txn_result "$result")
 check_response "$result" "\"code\": 0"
@@ -236,7 +218,6 @@ echo "$result"
 test_divider
 
 echo "Get Model with VID: ${vid} PID: ${pid}"
-# ACTION: Verify the support URL was updated correctly
 result=$(dcld query model get-model --vid=$vid --pid=$pid)
 check_response "$result" "\"vid\": $vid"
 check_response "$result" "\"pid\": $pid"
@@ -250,7 +231,6 @@ echo "$result"
 test_divider
 
 echo "Delete Model with VID: ${vid} PID: ${pid}"
-# ACTION: Delete the first model
 result=$(dcld tx model delete-model --vid=$vid --pid=$pid --from=$vendor_account --yes)
 result=$(get_txn_result "$result")
 echo "$result"
@@ -258,7 +238,6 @@ echo "$result"
 test_divider
 
 echo "Delete Model with VID: ${vid_with_pids} PID: ${pid}"
-# ACTION: Delete the second model
 result=$(dcld tx model delete-model --vid=$vid_with_pids --pid=$pid --from=$vendor_account_with_pids --yes)
 result=$(get_txn_result "$result")
 echo "$result"
@@ -266,7 +245,6 @@ echo "$result"
 test_divider
 
 echo "Query non existent model"
-# ACTION: Verify the first model is no longer found after deletion
 result=$(dcld query model get-model --vid=$vid --pid=$pid)
 check_response "$result" "Not Found"
 echo "$result"
@@ -274,7 +252,6 @@ echo "$result"
 test_divider
 
 echo "Query non existent model"
-# ACTION: Verify the second model is no longer found after deletion
 result=$(dcld query model get-model --vid=$vid_with_pids --pid=$pid)
 check_response "$result" "Not Found"
 echo "$result"
@@ -282,13 +259,11 @@ echo "$result"
 test_divider
 
 echo "Query model versions for deleted model"
-# ACTION: Verify model versions for the first model are gone after model deletion
 result=$(dcld query model model-version --vid=$vid --pid=$pid --softwareVersion=$sv)
 check_response "$result" "Not Found"
 echo "$result"
 
 echo "Query model versions for deleted model"
-# ACTION: Verify model versions for the second model are gone after model deletion
 result=$(dcld query model model-version --vid=$vid_with_pids --pid=$pid --softwareVersion=$sv)
 check_response "$result" "Not Found"
 echo "$result"
