@@ -1,5 +1,4 @@
 #!/bin/bash
-#TODELETE - Rewritten in Go: integration_tests/grpc_rest/pki/pki_revocation_child_test.go
 # Copyright 2020 DSR Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
