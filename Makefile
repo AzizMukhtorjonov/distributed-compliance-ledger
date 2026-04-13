@@ -112,6 +112,9 @@ go.sum: go.mod
 test:
 	go test -v $(PACKAGES)
 
+test_cli_go:
+	go test -v -count=1 -timeout 30m ./integration_tests/cli/...
+
 lint:
 	golangci-lint run ./... --timeout 5m0s
 
@@ -127,6 +130,6 @@ clean:
 ${TEST_TARGETS}:
 	make -f ${MK_TEST} $@
 
-.PHONY: all build install test lint clean \
+.PHONY: all build install test test_cli_go lint clean \
 		license license-check \
 		${TEST_TARGETS}
